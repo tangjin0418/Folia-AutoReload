@@ -3,13 +3,13 @@ package com.darkzek.autoreload;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
 /**
@@ -36,11 +36,7 @@ public class AutoReload extends JavaPlugin {
         getPlugins();
 
         //Set it to check every so often
-        new BukkitRunnable() {
-            public void run() {
-                checkIfModified();
-            }
-        }.runTaskTimerAsynchronously(this, 1, 20); //auto complete this statement
+        Bukkit.getAsyncScheduler().runAtFixedRate(this, s-> checkIfModified(),1,1, TimeUnit.SECONDS); //auto complete this statement
     }
 
     void getPlugins() {
@@ -80,7 +76,7 @@ public class AutoReload extends JavaPlugin {
                         }
 
                         //Send command synchronously
-                        Bukkit.getScheduler().callSyncMethod( this, () -> Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "plugman reload " + pluginName));
+                        Bukkit.getGlobalRegionScheduler().run( this, task -> Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "plugman reload " + pluginName));
                         Bukkit.getServer().broadcastMessage("Successfully reloaded " + pluginName + "!");
                         timeSinceLastChanged.remove(fileName);
                         timeSinceLastChanged.put(fileName, listOfFiles[i].lastModified());
